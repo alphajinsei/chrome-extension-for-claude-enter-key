@@ -1,13 +1,13 @@
 {
   "manifest_version": 3,
   "name": "Claude Enter Key Swap",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Swap Enter behavior on claude.ai: plain Enter inserts a newline (IME-safe), Ctrl/Cmd+Enter sends.",
   "content_scripts": [
     {
       "matches": ["https://claude.ai/*"],
       "js": ["content.js"],
-      "run_at": "document_idle",
+      "run_at": "document_start",
       "all_frames": false
     }
   ]
