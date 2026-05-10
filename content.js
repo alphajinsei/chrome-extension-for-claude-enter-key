@@ -35,43 +35,20 @@
   }
 
   function insertNewline(editor) {
-    // 1) execCommand insertLineBreak（多くの contenteditable で動く）
-    try {
-      if (document.execCommand('insertLineBreak')) {
-        return true;
-      }
-    } catch (_) {}
-
-    // 2) beforeinput イベント（モダン ProseMirror が拾う）
-    try {
-      const ev = new InputEvent('beforeinput', {
-        inputType: 'insertLineBreak',
-        bubbles: true,
-        cancelable: true,
-        composed: true
-      });
-      const notPrevented = editor.dispatchEvent(ev);
-      if (!notPrevented) return true;
-    } catch (_) {}
-
-    // 3) 手動で DOM 操作 + input イベント発火
-    const sel = window.getSelection();
-    if (!sel || sel.rangeCount === 0) return false;
-    const range = sel.getRangeAt(0);
-    range.deleteContents();
-    const br = document.createElement('br');
-    range.insertNode(br);
-    range.setStartAfter(br);
-    range.collapse(true);
-    sel.removeAllRanges();
-    sel.addRange(range);
-
-    editor.dispatchEvent(new InputEvent('input', {
-      inputType: 'insertLineBreak',
+    // ProseMirror に Shift+Enter として処理させる。直接 DOM を書き換えると PM の
+    // 内部状態とずれて巻き戻されるので、PM のキーマップを通すのが確実。
+    // 自分の window-capture ハンドラは shiftKey=true で早期 return するのでループしない。
+    const init = {
+      key: 'Enter',
+      code: 'Enter',
+      keyCode: 13,
+      which: 13,
+      shiftKey: true,
       bubbles: true,
+      cancelable: true,
       composed: true
-    }));
-    return true;
+    };
+    editor.dispatchEvent(new KeyboardEvent('keydown', init));
   }
 
   function handleKeydown(e) {
